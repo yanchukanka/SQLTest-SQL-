@@ -1,0 +1,81 @@
+# Задание 1. Получите все данные об аэропортах в порядке их кодов.
+# https://sqltest.online/ru/question/bookings/get-airports-data
+
+select * from airports_data
+order by airport_code;
+
+
+# Задание 2. Получите список городов с кодами расположенных в них аэропортов. Выведите таблицу из двух колонок city - 
+название города на английском и airport_code. Отсортируйте результат по названиям городов.
+
+select city ->> 'en' AS city, airport_code
+from airports_data
+order by 1;
+
+# Задание 3. Получите список самолетов с дальностью полета более 5000 км. Отсортируйте результаты в порядке убывания дальности.
+
+select * 
+from aircrafts_data
+where range > 5000
+order by range desc;
+
+# Задание 4. Получите список самолетов производства Boeing. Выведите таблицу с двумя столбцами aircraft_code и aircraft_name - название самолета на английском языке. Отсортируйте результат по коду самолета.
+
+select aircraft_code, model ->> 'en' AS aircraft_name
+from aircrafts_data
+where model ->> 'en' LIKE 'Boeing%'
+order by 1;
+
+
+# Задание 5. Получите список рейсов, фактически вылетевших из аэропорта Домодедово (DME) 1 августа 2017 г. Отсортируйте результат по фактическому времени вылета самолета.
+
+SELECT *
+FROM flights
+WHERE departure_airport = 'DME'
+    AND actual_departure IS NOT NULL
+    AND actual_departure::DATE = '2017-08-01'
+ORDER BY actual_departure;
+
+# Задание 6. Выведите список моделей самолётов, фактически вылетевших из аэропорта Домодедово (DME) 1 августа 2017 г. Отсортируйте результат по полю model
+
+SELECT DISTINCT model
+FROM flights f
+JOIN aircrafts_data a ON f.aircraft_code = a.aircraft_code
+WHERE f.departure_airport = 'DME'
+  AND f.actual_departure::date = '2017-08-01'
+ORDER BY model;
+
+
+# Задание 7. Подсчитайте количество рейсов фактически выполненных каждой моделью самолёта в течение августа 2017 года.
+Выведите результат в четыре колонки: aircraft_code, model_ru, model_en, flights_count отсортировав по убыванию количества рейсов.
+
+SELECT flights.aircraft_code, 
+       model ->> 'ru' as model_ru, 
+       model ->> 'en' as model_en, 
+       count(*) as flights_count
+FROM flights
+    JOIN aircrafts_data a
+    ON flights.aircraft_code = a.aircraft_code
+WHERE actual_departure::DATE >= '2017-08-01'
+  AND actual_departure::DATE < '2017-09-01'
+GROUP BY flights.aircraft_code, a.model
+ORDER BY 4 desc;
+
+
+Задание 8.Найдите самолеты без мест Бизнес-класса.
+Выведите результат в два столбца: aircraft_code и model, отсортированные по aircraft_code в порядке возрастания.
+
+SELECT 
+    a.aircraft_code, 
+    a.model
+FROM aircrafts_data a
+WHERE a.aircraft_code NOT IN (
+    SELECT DISTINCT aircraft_code
+    FROM seats
+    WHERE fare_conditions = 'Business'
+)
+ORDER BY a.aircraft_code;
+
+
+
+
