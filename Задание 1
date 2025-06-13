@@ -1,0 +1,4 @@
+# Получите все данные об аэропортах в порядке их кодов.
+
+select * from airports_data
+order by airport_code;
